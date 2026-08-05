@@ -53,6 +53,7 @@ export default function HiCard() {
 				<h1 className='font-averia mt-3 text-2xl'>
 					{greeting} <br /> I'm <span className='text-linear text-[32px]'>{username}</span> , Nice to <br /> meet you!
 				</h1>
+				<p className='mt-2 text-sm opacity-70'>AI 应用开发者 · Agent 方向 · 求职中</p>
 			</Card>
 		</HomeDraggableLayer>
 	)

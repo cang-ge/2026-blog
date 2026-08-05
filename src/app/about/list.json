@@ -1,5 +1,5 @@
 {
-	"title": "关于本站",
-	"description": "一个基于 Github 的现代化博客系统",
-	"content": "📦网站基于 Github 仓库完全存储，所有内容版本可控\n\n🚀无后端，无 serverless function，纯静态站点\n\n✏️文章通过可视化 UI 直接编辑并提交到 Github 仓库\n\n🔑所有用户都可以编辑，提交需要 Owner 的 Private Key\n\n## 技术栈\n\n- Next.js\n- React\n- TypeScript\n- Tailwind CSS\n- Motion\n- Github API"
+	"title": "关于 cangge",
+	"description": "AI 应用开发者 · Agent 方向 · 求职中",
+	"content": "你好，我是 cangge，一名 AI 应用开发者，正在求职 **Agent 开发 / AI 产品开发 / AI 产品经理** 方向。\n\n## 技术方向\n\n- **Agent 开发**：LLM 应用、工具调用、多智能体编排\n- **Python**：数据处理、自动化脚本、桌面应用\n- **AI 工具 / 产品**：把 AI 能力封装成可用的产品\n\n## 这个博客\n\n记录我的学习、项目与求职过程，所有内容托管在 GitHub，零服务器、零费用。\n\n## 联系我\n\n- GitHub：[github.com/cang-ge](https://github.com/cang-ge)\n- 邮箱：1662579816@qq.com"
 }

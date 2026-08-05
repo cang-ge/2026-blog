@@ -1,0 +1,7 @@
+{
+  "title": "Agent 开发入门笔记",
+  "tags": ["Agent", "LLM", "学习笔记"],
+  "date": "2026-08-06",
+  "summary": "Agent 是什么、核心概念（ReAct、工具调用、记忆、多智能体）、主流框架与工程化要点。",
+  "category": "Agent 开发"
+}
