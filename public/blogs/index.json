@@ -1,5 +1,18 @@
 [
   {
+    "slug": "zero-cost-blog",
+    "title": "零成本开源博客搭建记",
+    "tags": [
+      "博客",
+      "开源",
+      "Next.js"
+    ],
+    "date": "2026-08-06T08:00",
+    "summary": "不写后端、不花服务器费用，用 GitHub + Next.js + Vercel 搭一个属于自己的博客。",
+    "hidden": false,
+    "category": "AI 应用"
+  },
+  {
     "slug": "ai-job-roadmap",
     "title": "我的 AI 求职路线图",
     "tags": [
@@ -24,18 +37,5 @@
     "summary": "Agent 是什么、核心概念（ReAct、工具调用、记忆、多智能体）、主流框架与工程化要点。",
     "hidden": false,
     "category": "Agent 开发"
-  },
-  {
-    "slug": "zero-cost-blog",
-    "title": "零成本开源博客搭建记",
-    "tags": [
-      "博客",
-      "开源",
-      "Next.js"
-    ],
-    "date": "2026-08-06",
-    "summary": "不写后端、不花服务器费用，用 GitHub + Next.js + Vercel 搭一个属于自己的博客。",
-    "hidden": false,
-    "category": "AI 应用"
   }
 ]

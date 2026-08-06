@@ -50,4 +50,4 @@ public/blogs/my-post/
 
 ## 想自己搭？
 
-直接 fork 这个项目的代码（YYsuni/2025-blog-public），改掉站点信息，部署到 Vercel，再创建 GitHub App 即可。这就是本站的由来。
+直接 fork 这个项目的代码，改掉站点信息，部署到 Vercel，再创建 GitHub App 即可。

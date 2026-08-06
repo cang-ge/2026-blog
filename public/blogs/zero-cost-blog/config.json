@@ -1,7 +1,12 @@
 {
   "title": "零成本开源博客搭建记",
-  "tags": ["博客", "开源", "Next.js"],
-  "date": "2026-08-06",
+  "tags": [
+    "博客",
+    "开源",
+    "Next.js"
+  ],
+  "date": "2026-08-06T08:00",
   "summary": "不写后端、不花服务器费用，用 GitHub + Next.js + Vercel 搭一个属于自己的博客。",
+  "hidden": false,
   "category": "AI 应用"
 }
