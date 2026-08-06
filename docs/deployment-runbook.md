@@ -83,7 +83,7 @@ Vercel → 项目 → **Settings → Environment Variables**（Production）添�
 1. 打开 `https://cangge.me` → 首页应显示 cangge 品牌、GitHub+邮箱按钮
 2. `/blog` → 应只显示 3 篇自己的文章（ai-job-roadmap / agent-dev-notes / zero-cost-blog）
 3. `/blog/agent-dev-notes` → 正文渲染正常
-4. `/rss.xml` → 链接应为 `https://cangge.me/...`（不是 localhost / yysuni）
+4. `/rss.xml` → 链接应全部是 `https://cangge.me/...`（不应残留 localhost 或其它外部域名）
 5. 打开 `/write` → **上传 `cangge-blog.*.pem`**（页面会用它 + ENCRYPT_KEY 加密存浏览器）
 6. 新建一篇文章 → 保存 → 确认 GitHub `cang-ge/2026-blog` 出现新 commit → 前台可见
 7. `www.cangge.me` → 能访问或重定向到主域名
@@ -92,15 +92,58 @@ Vercel → 项目 → **Settings → Environment Variables**（Production）添�
 
 ---
 
+## Phase H — 音乐编辑器（在线管理音乐）
+
+首页音乐卡片可点击进入 `/music` 音乐管理页，功能镜像 `/write` 文章编辑器：列表展示、设主页播放、增删音乐（上传音频或粘贴外链）。
+
+### 入口
+- 首页音乐卡片**点击卡片** → `/music`（或直接访问 `https://www.cangge.me/music`）
+
+### 页面结构
+| 路由 | 作用 |
+|---|---|
+| `/music` | 列表 + 管理：设主页播放 / 编辑 / 删除 / 添加 |
+| `/music/new` | 新建歌曲 |
+| `/music/<slug>` | 编辑已有歌曲 |
+
+### 首次使用
+1. 打开 `/music` → 右上角「导入密钥」→ 上传 GitHub App 的 `cangge-blog.*.pem`（与 `/write` 同一个私钥）
+2. 已授权后即可增删改
+
+### 添加歌曲
+1. `/music` → 「添加音乐」
+2. 填写：标题、歌手、slug（英文小写，**创建后不可改**）、排序
+3. 音频来源二选一：
+   - **上传**：本地 mp3/m4a/aac/ogg/wav/flac/webm；>10MB 会提示建议改外链（避免仓库膨胀）
+   - **外链**：粘贴 https 直链（不占仓库体积，适合大文件）
+4. 播放预览确认 → 「保存」（未授权会先引导导入密钥）
+5. 保存后 GitHub 出现 commit → **Vercel Redeploy** → 前台生效
+
+### 设置主页播放
+- `/music` 列表 → 目标歌曲 → 「设为主页播放」
+- 写回 `src/config/site-content.json` 的 `primaryMusicSlug` → **Vercel Redeploy + 刷新**后，首页音乐卡自动播放该曲
+- 未设置时默认播放列表第一首
+
+### 编辑 / 删除
+- **编辑**：列表 →「编辑」→ 改元数据或换音频 → 保存（不改音频则不会重复上传）
+- **删除**：列表 →「删除」→ 确认后，GitHub 中该歌曲目录 + index 条目一并清除
+
+### 说明
+- 每首歌一个目录 `public/music/<slug>/config.json`（元数据）+ `audio.<ext>`（上传的音频）；外链歌只存 config.json，`src` 直接是外链 URL
+- 歌曲按 `order` 升序排列；勾选「前台隐藏」后未登录访客不可见（与文章 `hidden` 一致）
+- 增删改、设主页播放都走 GitHub App 鉴权 + Git Trees API，与 `/write` 同一套
+
+---
+
 ## 上线后待办（不影响部署）
 
-1. **点赞功能依赖原作者第三方 Worker**（`blog-liker.yysuni1001.workers.dev`）：
-   - 现状：点赞数走原作者免费 Worker，首页点赞按钮默认 slug=`yysuni`，可能与其站点数据混在一起；Worker 挂了点赞静默失败（不报错）
-   - 选项：① 保留（零成本）② 自己部署一个点赞 Worker（需要新代码）③ 隐藏/删除点赞按钮
-   - 建议：先保留，上线观察；稳定后二选一
+1. **点赞功能依赖一个第三方免费 Worker**（默认 `blog-liker.yysuni1001.workers.dev`，已可通过 env `NEXT_PUBLIC_LIKE_ENDPOINT` 指向你自己的服务）：
+   - 现状：点赞计数走该第三方服务；服务不可用时点赞静默失败（不报错），不影响其它功能
+   - 选项：① 保留默认（零成本）② 自建一个点赞 Worker 并通过 env 指向 ③ 隐藏/删除点赞按钮
+   - 建议：先保留，上线观察；稳定后再决定是否自建
 2. **头像/主题色/背景**：站内配置对话框可视化设置，无需代码
 3. **大陆访问**：Cloudflare 免费版走海外节点，比 Vercel 直连稳定得多，但仍有 ~200-400ms 延迟、偶发被干扰。若日后要**大陆真正流畅**：见**附录 B**（备案方案，含"国内 CDN 回源海外 Vercel 不稳"的陷阱说明）
-4. **图片图床**：站内图片目前放仓库 `public/`，量大后建议换图床（见原 README）
+4. **图片图床**：站内图片目前放仓库 `public/`，量大后建议换图床（方案待定，后续单独整理文档）
 
 ## 常见问题
 
@@ -120,7 +163,7 @@ Vercel → 项目 → **Settings → Environment Variables**（Production）添�
 | 架构 | 浏览器 → CF 边缘 → Vercel 服务器 → 回 | 浏览器 → CF 边缘（Worker 即服务端） |
 | 大陆访问 | 静态被 CF 缓存走边缘，比 Vercel 直连强很多；动态页每请求多一跳 CF→Vercel | 动态页直接在边缘执行，少一跳；但同样走海外边缘，都 ~200-400ms |
 | 成本 | **$0**（Vercel Hobby + CF 免费） | 免费额度 CPU 仅 10ms/请求，本博客 SSR（shiki+katex+markdown）易超限，生产基本要 **Workers Paid $5/月** |
-| 上线风险 | **低**：上游作者在 Vercel 跑通的原生路径 | **中高**：Next.js 16 + OpenNext on Workers 是上游未验证组合，`node:fs`/`path`（RSS 读 public）、流式渲染有边缘兼容坑 |
+| 上线风险 | **低**：Next.js 在 Vercel 上是被广泛验证的路径 | **中高**：Next.js 16 + OpenNext on Workers 尚未在生产大规模验证，`node:fs`/`path`（RSS 读 public）、流式渲染有边缘兼容坑 |
 | 配置/维护 | 一次性灰云→橙云；两个面板（Vercel+CF） | `build:cf` + `wrangler deploy` + Worker Secrets；一个面板（全 CF） |
 | 调试 | Vercel 实时日志 + 预览部署，最顺手 | `wrangler tail`，可用但不如 Vercel 直观 |
 
