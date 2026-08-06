@@ -1,164 +1,149 @@
-# 2025 Blog
+# cangge Blog
 
-> 最新引导说明：https://www.yysuni.com/blog/readme
+> cangge 的个人博客 · Agent / AI 应用 / Python，记录学习与实践，正在求职中
+>
+> 在线地址：**https://cangge.me**（Vercel 部署 + Cloudflare CDN 反代）
 
-该项目使用 Github App 管理项目内容，请保管好后续创建的 **Private key**，不要上传到公开网上。
+一个**仓库即数据库**的个人博客系统：所有内容（文章、音乐、站点配置、图片）都以文件形式存放在 GitHub 仓库里，访问端静态读取，作者端通过 GitHub App 鉴权在线写入。无需自建服务器、无数据库，内容永远属于你自己。
 
-## 1. 安装
+---
 
-使用该项目可以先不做本地开发，直接部署然后配置环境变量。具体变量名请看下列大写变量
+## ✨ 功能特性
 
-```ts
-export const GITHUB_CONFIG = {
-	OWNER: process.env.NEXT_PUBLIC_GITHUB_OWNER || 'yysuni',
-	REPO: process.env.NEXT_PUBLIC_GITHUB_REPO || '2025-blog-public',
-	BRANCH: process.env.NEXT_PUBLIC_GITHUB_BRANCH || 'main',
-	APP_ID: process.env.NEXT_PUBLIC_GITHUB_APP_ID || '-'
-} as const
+| 模块 | 说明 |
+|---|---|
+| **首页卡片式布局** | 时钟 / 艺术插画 / 音乐 / 日历 / 分享 / 收藏等卡片，可拖拽调整位置与尺寸 |
+| **文章系统** | `/blog` 列表 + `/blog/<slug>` 正文（Markdown / LaTeX / 代码高亮），分类、标签、隐藏、封面 |
+| **在线写作** | `/write` 浏览器内直接写文章并落库到 GitHub（GitHub App 私钥鉴权） |
+| **音乐编辑器** | `/music` 管理音乐：列表、设主页播放、增删（上传音频或粘贴外链） |
+| **站点配置** | 首页可视化配置：主题色、头像、背景、社交按钮，改完写回仓库 |
+| **RSS / Sitemap** | `/rss.xml`、`/sitemap.xml` 自动生成 |
+| **大陆访问优化** | Cloudflare 免费 CDN 反代，比直连 Vercel 更稳 |
+
+---
+
+## 🧱 技术栈
+
+- **框架**：Next.js 16（App Router） · React 19 · TypeScript
+- **样式**：Tailwind CSS 4 + framer-motion（motion/react）动画
+- **状态与数据**：Zustand（全局状态） · SWR（服务端数据拉取）
+- **渲染**：Shiki（代码高亮） · KaTeX（数学公式） · marked（Markdown）
+- **鉴权**：jsrsasign（GitHub App JWT 签名）
+- **部署**：Vercel（应用） + Cloudflare（CDN/DNS）
+
+---
+
+## 🏗️ 架构：仓库即数据库
+
+```
+┌─────────────┐        ┌──────────────┐        ┌────────────────────────┐
+│   访客浏览器   │ ─────▶ │  Cloudflare  │ ─────▶ │        Vercel          │
+│             │  CDN   │  边缘节点/CDN  │  回源  │   Next.js 应用（静态）   │
+└─────────────┘        └──────────────┘        └───────────┬────────────┘
+                                                            │ 读取（静态 /public）
+                                                            ▼
+                                               ┌────────────────────────┐
+                                               │   GitHub 仓库（唯一数据源）│
+                                               │  cang-ge/2026-blog     │
+                                               └───────────┬────────────┘
+                                                            ▲ 写入（GitHub App）
+                    ┌────────────┐  JWT + 安装令牌   ┌──────┴──────────┐
+                    │ 作者浏览器   │ ───────────────▶ │  Git Trees API  │
+                    │  /write     │                  │  /music         │
+                    └────────────┘                  └─────────────────┘
 ```
 
-也可以自己手动先调整安装，可自行 `pnpm i`
+- **访客读**：内容全部是仓库里的文件（`public/` 静态目录），Next.js 直接读取渲染，零数据库、零后端。
+- **作者写**：浏览器用 GitHub App 的 **Private Key** 签名 JWT → 换取仓库安装令牌 → 通过 **Git Trees API** 一次提交新文件/删除旧文件。任何能 git push 的操作，在浏览器里都能做。
 
-## 2. 部署
+### 内容存放约定
 
-我这里熟悉 Vercel 部署，就以 Vercel 部署为例子。创建 Project => Import 这个项目
-
-![](https://www.yysuni.com/blogs/readme/730266f17fab9717.png)
-
-无需配置，直接点部署
-
-![](https://www.yysuni.com/blogs/readme/95dee9a69154d0d0.png)
-
-大约 60 秒会部署完成，有一个直接 vercel 域名，如：https://2025-blog-public.vercel.app/
-
-到这里部署网站已经完成了，下一步创建 Github App
-
-## 3. 创建 Github App 链接仓库
-
-在 github 个人设置里面，找到最下面的 Developer Settings ，点击进入
-
-![](https://www.yysuni.com/blogs/readme/0abb3b592cbedad6.png)
-
-进入开发者页面，点击 **New Github App**
-
-*GitHub App name* 和 *Homepage URL* , 输入什么都不影响。Webhook 也关闭，不需要。
-
-![](https://www.yysuni.com/blogs/readme/71dcd9cf8ec967c0.png)
-
-只需要注意设置一个仓库 write 权限，其它不用。
-
-![](https://www.yysuni.com/blogs/readme/2be290016e56cd34.png)
-
-点击创建，谁能安装这个仓库这个选择无所谓。直接创建。
-
-![](https://www.yysuni.com/blogs/readme/aa002e6805ab2d65.png)
-
-
-### 创建密钥
-
-创建好 Github App 后会提示必须创建一个 **Private Key**，直接创建，会自动下载（不见了也不要紧，后面自己再创建再下载就行）。页面上有个 **App ID** 需要复制一下
-
-再切换到安装页面
-
-![](https://www.yysuni.com/blogs/readme/c122b1585bb7a46a.png)
-
-这里一定要只**授权当前项目**。
-
-![](https://www.yysuni.com/blogs/readme/2cf1cee3b04326f1.png)
-
-点击安装，就完成了 Github App 管理该仓库的权限设置了。下一步就是让前端知道推送那个项目，就是最开始提到的环境变量。（如果你不会设置环境变量，直接改仓库文件 `src/consts.ts` 也行。因为是公开的，所以环境变量意义也不大）
-
-直接输入这几个环境变量值就行，一般只用设置 OWNER 和 APP_ID。其它配置不用管，直接输入创建就行。
-
-![](https://www.yysuni.com/blogs/readme/c5a049d737848abf.png)
-
-设置完成后，需要手动再部署一次，让环境变量生效。
-* 可以直接 push 一次仓库代码会触发部署
-* 也可以手动选择创建一次部署
-![](https://www.yysuni.com/blogs/readme/59a802ed8d1c3a13.png)
-
-## 4. 完成
-
-现在，部署的这个网站就可以开始使用前端改内容了。比如更改一个分享内容。
-
-**提示**，网站前端页面删改完提示成功之后，你需要等待后台的部署完成，再刷新页面才能完成服务器内容的更新哦。
-
-## 5. 删除
-
-使用这个项目应该第一件事需要删除我的 blog，单独删除，批量删除已完成。
-
-## 6. 配置
-
-大部分页面右上角都会有一个编辑按钮，意味着你可以使用 **private key** 进行配置部署。
-
-### 6.1 网站配置
-
-首页有一个不显眼的配置按钮，点击就能看到现在可以配置的内容。
-
-![](https://www.yysuni.com/blogs/readme/cddb4710e08a5069.png)
-
-## 7. 写 blog
-
-写 blog 的图片管理，可能会有疑惑。图片管理推荐逻辑是先点击 **+ 号** 添加图片，（推荐先压缩好，尺寸推荐宽度不超过 1200）。然后将上传好的图片直接拖入文案编辑区，这就已经添加好了，点击右上角预览就可以看到效果。
-
-## 8. 写给非前端
-
-非前端配置内容，还是需要一个文件指引。下面写一些更细致的代码配置。
-
-### 8.1 移除 Liquid Grass
-
-进入 `src/layout/index.tsx` 文件，删除两行代码，然后提交代码到你的 github
-```tsx
-const LiquidGrass = dynamic(() => import('@/components/liquid-grass'), { ssr: false })
-// 中间省略...
-<LiquidGrass /> // 第 53 行
+```
+public/blogs/<slug>/        # 文章：index.md + config.json（元数据）
+public/blogs/index.json     # 文章索引（列表页读取）
+public/music/<slug>/        # 音乐：config.json + audio.<ext>（上传的音频）
+public/music/index.json     # 音乐索引（首页卡片/列表页读取）
+src/config/site-content.json  # 站点配置（品牌/主题/社交按钮/主页音乐）
+src/config/card-styles.json   # 卡片布局（位置/尺寸/开关）
 ```
 
-![](https://www.yysuni.com/blogs/readme/f70ff3fe3a77f193.png)
+---
 
-### 8.2 配置首页内容
+## 📁 项目结构
 
-首页的内容现在只能前端配置一部分，所以代码更改在 `src/app/(home)` 目录，这个目录代表首页所有文件。首页的具体文件为  `src/app/(home)/page.tsx`
+```
+src/
+├── app/
+│   ├── (home)/            # 首页（卡片、配置对话框、布局编辑）
+│   ├── about/             # 关于页
+│   ├── blog/              # 文章列表 + 详情
+│   ├── music/             # 音乐管理（/music、/music/new、/music/[slug]）
+│   ├── write/             # 在线写作（/write、/write/[slug]）
+│   ├── rss.xml/           # RSS 生成
+│   └── sitemap.ts         # Sitemap 生成
+├── components/            # 全局组件（含首页音乐卡片 music-card）
+├── config/                # site-content.json / card-styles.json
+├── hooks/                 # SWR hooks（use-blog-index、use-music-index）
+├── lib/                   # github-client（Git API）、auth、blog-index、music-index
+└── consts.ts              # GitHub 仓库配置默认值
+```
 
- ![](https://www.yysuni.com/blogs/readme/011679cd9bf73602.png)
+---
 
-这里可以看到有很多 `Card` 文件，需要改那个首页 Card 内容就可以点入那个具体文件修改。
+## 🚀 本地开发
 
-比如中间的内容，为 `HiCard`，点击 `hi-card.tsx` 文件，即可更改其内容。
+```bash
+pnpm install      # 安装依赖
+pnpm dev          # 启动开发服务器 → http://localhost:2025
+pnpm build        # 生产构建（TypeScript + Next.js）
+pnpm start        # 本地预览生产构建
+```
 
-![](https://www.yysuni.com/blogs/readme/20b0791d012163ee.png)
+> 内容在线写入需要配置 GitHub App 私钥；仅本地预览页面无需任何配置。
 
-## 9. 互助群
+---
 
-对于完全不是**程序员**的用户，确实会对于更新代码后，如何同步，如何**合并代码**手足无措。我创建了一个 **QQ群**（加群会简单点），或者 vx 群还是 tg 群会好一点可以 issue 里面说下就行。
+## 🌐 部署
 
-QQ 群：[https://qm.qq.com/q/spdpenr4k2](https://qm.qq.com/q/spdpenr4k2)
-> 不好意思，之前的那个qq群ID（1021438316），不知道为啥搜不到😂
+完整部署手册见 **[`docs/deployment-runbook.md`](docs/deployment-runbook.md)**，涵盖：
 
-微信群：刚建好了一个微信群，没有 qq 的可以用这个微信群
-![](https://www.yysuni.com/blogs/readme/343f2c62035b8e23.webp)
+- **Phase A–D**：Cloudflare 建站 + 改 NS + Vercel 部署 + 绑定 `cangge.me`（灰云→橙云 + SSL Full strict）
+- **Phase E**：创建 GitHub App（Contents write + 私钥 + App ID + 安装到仓库）
+- **Phase F**：Vercel 环境变量 + Redeploy
+- **Phase G/H**：发布第一篇文章、音乐编辑器在线管理
 
-tg 群：1月1号，才创建的 tg 群 https://t.me/public_blog_2025
+架构选型与备案决策的对比分析见该文档**附录 A/B**。
 
+---
 
-应该主要是我自己亲自帮助你们遇到问题怎么办。（后续看看有没有好心人）
+## 🔐 环境变量
 
-希望多多的非程序员加入 blogger 行列，web blog 还是很好玩的，属于自己的 blog 世界。
+| 变量名 | 说明 |
+|---|---|
+| `NEXT_PUBLIC_GITHUB_OWNER` | GitHub 用户名（默认 `cang-ge`） |
+| `NEXT_PUBLIC_GITHUB_REPO` | 内容仓库名（默认 `2026-blog`） |
+| `NEXT_PUBLIC_GITHUB_BRANCH` | 分支（默认 `main`） |
+| `NEXT_PUBLIC_GITHUB_APP_ID` | GitHub App ID |
+| `NEXT_PUBLIC_GITHUB_ENCRYPT_KEY` | 私钥加密密钥（与 `src/consts.ts` 默认值一致） |
+| `SITE_URL` | 正式域名，sitemap 用（如 `https://cangge.me`） |
+| `NEXT_PUBLIC_SITE_URL` | 正式域名，RSS 用 |
+| `NEXT_PUBLIC_LIKE_ENDPOINT` | 点赞后端地址（可选，默认第三方免费 Worker） |
 
-游戏资产不一定属于你的，你只有**使用权**，但这个 blog **网站、内容、仓库一定是属于你的**
+---
 
-#### 特殊的导航 Card
+## ✍️ 在线写作原理
 
-因为这个 Card 是全局都在的，所以放在了 `src/components` 目录
+1. 打开 `/write`，上传 GitHub App 的 `*.pem` **私钥**（仅存浏览器 sessionStorage，用 `ENCRYPT_KEY` 加密，不传服务器）。
+2. 发布时用私钥签 JWT → 换取仓库**安装令牌**。
+3. 文章/图片/索引全部以**一个 commit** 写回仓库（Git Trees API），保证原子性。
+4. GitHub 出现新 commit → **Vercel 手动 Redeploy 一次** → 前台可见。
 
-![](https://www.yysuni.com/blogs/readme/9780c38f886322fd.png)
+> ⚠️ 因内容由 GitHub App 直接 push（非 GitHub 网页 push），**Vercel 不会自动触发重新构建**——每次改完内容需手动 Redeploy 一次（Deployments → ⋯ → Redeploy）。
 
-## Star History
+---
 
-<a href="https://www.star-history.com/#YYsuni/2025-blog-public&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=YYsuni/2025-blog-public&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=YYsuni/2025-blog-public&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=YYsuni/2025-blog-public&type=date&legend=top-left" />
- </picture>
-</a>
+## 📜 License
+
+[MIT](LICENSE)
+
+> 本项目基于 MIT 许可证开源，版权声明见 `LICENSE` 文件。
