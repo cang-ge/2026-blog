@@ -4,20 +4,21 @@ import { useState, useRef, useEffect, useMemo } from 'react'
 import Card from '@/components/card'
 import { useCenterStore } from '@/hooks/use-center'
 import { useConfigStore } from '../app/(home)/stores/config-store'
+import { useMusicIndex } from '@/hooks/use-music-index'
 import { CARD_SPACING } from '@/consts'
 import MusicSVG from '@/svgs/music.svg'
 import PlaySVG from '@/svgs/play.svg'
 import { HomeDraggableLayer } from '../app/(home)/home-draggable-layer'
 import { Pause } from 'lucide-react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import clsx from 'clsx'
-
-const MUSIC_FILES = ['/music/close-to-you.mp3', '/music/christmas.m4a']
 
 export default function MusicCard() {
 	const pathname = usePathname()
+	const router = useRouter()
 	const center = useCenterStore()
 	const { cardStyles, siteContent } = useConfigStore()
+	const { items } = useMusicIndex()
 	const styles = cardStyles.musicCard
 	const hiCardStyles = cardStyles.hiCard
 	const clockCardStyles = cardStyles.clockCard
@@ -28,6 +29,28 @@ export default function MusicCard() {
 	const [progress, setProgress] = useState(0)
 	const audioRef = useRef<HTMLAudioElement | null>(null)
 	const currentIndexRef = useRef(0)
+	const trackLenRef = useRef(0)
+	const prevPrimaryRef = useRef<string | null>(null)
+
+	const trackSrcs = useMemo(() => items.map(item => item.src), [items])
+	const primarySlug = siteContent.primaryMusicSlug || items[0]?.slug || ''
+
+	// 保持 track 长度 ref 同步（供 ended 事件使用）
+	useEffect(() => {
+		trackLenRef.current = trackSrcs.length
+	}, [trackSrcs])
+
+	// 数据就绪或主播放歌变化时，定位到主播放歌
+	useEffect(() => {
+		if (items.length === 0) return
+		if (prevPrimaryRef.current === primarySlug) return
+		prevPrimaryRef.current = primarySlug
+		const idx = items.findIndex(item => item.slug === primarySlug)
+		const target = idx >= 0 ? idx : 0
+		currentIndexRef.current = target
+		setCurrentIndex(target)
+		setProgress(0)
+	}, [items, primarySlug])
 
 	const isHomePage = pathname === '/'
 
@@ -64,7 +87,9 @@ export default function MusicCard() {
 		}
 
 		const handleEnded = () => {
-			const nextIndex = (currentIndexRef.current + 1) % MUSIC_FILES.length
+			const len = trackLenRef.current
+			if (len === 0) return
+			const nextIndex = (currentIndexRef.current + 1) % len
 			currentIndexRef.current = nextIndex
 			setCurrentIndex(nextIndex)
 			setProgress(0)
@@ -92,10 +117,10 @@ export default function MusicCard() {
 	// Handle currentIndex change - load new audio
 	useEffect(() => {
 		currentIndexRef.current = currentIndex
-		if (audioRef.current) {
+		if (audioRef.current && trackSrcs[currentIndex]) {
 			const wasPlaying = !audioRef.current.paused
 			audioRef.current.pause()
-			audioRef.current.src = MUSIC_FILES[currentIndex]
+			audioRef.current.src = trackSrcs[currentIndex]
 			audioRef.current.loop = false
 			setProgress(0)
 
@@ -103,7 +128,7 @@ export default function MusicCard() {
 				audioRef.current.play().catch(console.error)
 			}
 		}
-	}, [currentIndex])
+	}, [currentIndex, trackSrcs])
 
 	// Handle play/pause state change
 	useEffect(() => {
@@ -127,13 +152,23 @@ export default function MusicCard() {
 	}, [])
 
 	const togglePlayPause = () => {
+		if (items.length === 0) {
+			router.push('/music')
+			return
+		}
 		setIsPlaying(!isPlaying)
+	}
+
+	const goToMusic = () => {
+		router.push('/music')
 	}
 
 	// Hide component if not on home page and not playing
 	if (!isHomePage && !isPlaying) {
 		return null
 	}
+
+	const currentTrack = items[currentIndex]
 
 	return (
 		<HomeDraggableLayer cardKey='musicCard' x={x} y={y} width={styles.width} height={styles.height}>
@@ -155,19 +190,29 @@ export default function MusicCard() {
 					</>
 				)}
 
-				<MusicSVG className='h-8 w-8' />
+				<div onClick={goToMusic} className='flex w-full cursor-pointer items-center gap-3' title='管理音乐'>
+					<MusicSVG className='h-8 w-8' />
 
-				<div className='flex-1'>
-					<div className='text-secondary text-sm'>Close To You</div>
+					<div className='flex-1'>
+						<div className='text-secondary truncate text-sm'>
+							{currentTrack ? currentTrack.title || currentTrack.slug : '暂无音乐'}
+						</div>
+						{currentTrack?.artist && <div className='text-secondary/70 truncate text-[11px]'>{currentTrack.artist}</div>}
 
-					<div className='mt-1 h-2 rounded-full bg-white/60'>
-						<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
+						<div className='mt-1 h-2 rounded-full bg-white/60'>
+							<div className='bg-linear h-full rounded-full transition-all duration-300' style={{ width: `${progress}%` }} />
+						</div>
 					</div>
-				</div>
 
-				<button onClick={togglePlayPause} className='flex h-10 w-10 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
-					{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
-				</button>
+					<button
+						onClick={e => {
+							e.stopPropagation()
+							togglePlayPause()
+						}}
+						className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white transition-opacity hover:opacity-80'>
+						{isPlaying ? <Pause className='text-brand h-4 w-4' /> : <PlaySVG className='text-brand ml-1 h-4 w-4' />}
+					</button>
+				</div>
 			</Card>
 		</HomeDraggableLayer>
 	)

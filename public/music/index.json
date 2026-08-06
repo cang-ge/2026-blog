@@ -1,0 +1,20 @@
+[
+	{
+		"slug": "close-to-you",
+		"title": "Close To You",
+		"artist": "未知作者",
+		"src": "/music/close-to-you.mp3",
+		"order": 1,
+		"hidden": false,
+		"addedAt": "2026-08-06T00:00:00.000Z"
+	},
+	{
+		"slug": "christmas",
+		"title": "Christmas",
+		"artist": "未知作者",
+		"src": "/music/christmas.m4a",
+		"order": 2,
+		"hidden": false,
+		"addedAt": "2026-08-06T00:00:00.000Z"
+	}
+]

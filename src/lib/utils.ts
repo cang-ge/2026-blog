@@ -31,6 +31,19 @@ export function getFileExt(filename: string): string {
 	return '.png'
 }
 
+export function getAudioExt(filename: string): string {
+	const lower = filename.toLowerCase()
+	if (lower.endsWith('.mp3')) return '.mp3'
+	if (lower.endsWith('.m4a')) return '.m4a'
+	if (lower.endsWith('.aac')) return '.aac'
+	if (lower.endsWith('.ogg')) return '.ogg'
+	if (lower.endsWith('.oga')) return '.oga'
+	if (lower.endsWith('.wav')) return '.wav'
+	if (lower.endsWith('.flac')) return '.flac'
+	if (lower.endsWith('.webm')) return '.webm'
+	return ''
+}
+
 export function rand(a: number, b: number) {
 	return a + Math.random() * (b - a)
 }
