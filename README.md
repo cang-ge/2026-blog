@@ -1,8 +1,8 @@
 # cangge Blog
 
-> cangge 的个人博客 · Agent / AI 应用 / Python，记录学习与实践，正在求职中
+> cangge 的个人博客仓库管理，该项目fork于开源项目，并且在其之上拓展了一些功能。
 >
-> 在线地址：**https://cangge.me**（Vercel 部署 + Cloudflare CDN 反代）
+> 在线地址：**https://cangge.me**  （Vercel 部署 + Cloudflare CDN 反代）
 
 一个**仓库即数据库**的个人博客系统：所有内容（文章、音乐、站点配置、图片）都以文件形式存放在 GitHub 仓库里，访问端静态读取，作者端通过 GitHub App 鉴权在线写入。无需自建服务器、无数据库，内容永远属于你自己。
 
