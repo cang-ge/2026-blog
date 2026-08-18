@@ -1,1 +1,13 @@
-[]
+[
+	{
+		"name": "OpenWebUi",
+		"year": 2026,
+		"image": "blob:https://www.cangge.me/069be175-5c83-4714-bca3-a3686b17b726",
+		"url": "http://localhost:3000/",
+		"description": "克隆于GitHub，个人AI工作台。本地启动",
+		"tags": [
+			"OpenWebUi"
+		],
+		"github": "https://github.com/open-webui/open-webui"
+	}
+]
